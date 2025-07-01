@@ -13,15 +13,14 @@ def extract_text_from_pdf(pdf_bytes):
 def replace_text_in_pdf(pdf_bytes, search_text, replace_text):
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     for page in doc:
-        # Recherche des occurrences du texte à remplacer
         text_instances = page.search_for(search_text)
         for inst in text_instances:
-            # Correction ici : fill=[1,1,1] pour le blanc
+            x0, y0, x1, y1 = inst
+            # Insère d'abord le texte de remplacement
+            page.insert_text((x0, y0), replace_text, fontsize=12, color=(0,0,0))
+            # Prépare le masquage du texte original
             page.add_redact_annot(inst, fill=[1,1,1])
         page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
-        # Insérer le nouveau texte (dans la même zone)
-        for inst in text_instances:
-            page.insert_textbox(inst, replace_text, fontsize=12, color=(0,0,0))
     temp_pdf = io.BytesIO()
     doc.save(temp_pdf)
     doc.close()
