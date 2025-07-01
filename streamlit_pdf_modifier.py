@@ -1,10 +1,7 @@
 import streamlit as st
 import fitz  # PyMuPDF
-import tempfile
 import io
-from PyPDF2 import PdfWriter
 
-# Fonction pour extraire le texte d'un PDF
 def extract_text_from_pdf(pdf_bytes):
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     all_text = []
@@ -13,14 +10,16 @@ def extract_text_from_pdf(pdf_bytes):
     doc.close()
     return all_text
 
-# Fonction pour remplacer un texte dans toutes les pages d'un PDF
 def replace_text_in_pdf(pdf_bytes, search_text, replace_text):
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
     for page in doc:
+        # Recherche des occurrences du texte à remplacer
         text_instances = page.search_for(search_text)
         for inst in text_instances:
-            page.add_redact_annot(inst, fill=(255,255,255))
+            # Correction ici : fill=[1,1,1] pour le blanc
+            page.add_redact_annot(inst, fill=[1,1,1])
         page.apply_redactions(images=fitz.PDF_REDACT_IMAGE_NONE)
+        # Insérer le nouveau texte (dans la même zone)
         for inst in text_instances:
             page.insert_textbox(inst, replace_text, fontsize=12, color=(0,0,0))
     temp_pdf = io.BytesIO()
